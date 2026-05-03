@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reading Festival Posters Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .search-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .poster {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            max-width: 300px;
+        }
+        .poster img {
+            max-width: 100%;
+            height: auto;
+        }
+        .no-results {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reading Festival Posters Search</h1>
+    <div class="search-container">
+        <input type="text" id="yearInput" placeholder="Enter year (e.g., 1992)">
+        <button onclick="searchPosters()">Search</button>
+    </div>
+    <div id="results" class="results"></div>
+
+    <script>
+        let posters = [
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2021/08/reading_92_crop_2000-1392x884.jpg",
+    "alt": "The line-up for Reading Festival 1992",
+    "width": 692,
+    "height": 439
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1989.gif",
+    "alt": "",
+    "width": 367,
+    "height": 857
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1990.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1019
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1991.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 973
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1992.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1063
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1993-.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 962
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1994.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 949
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1995-.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 946
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1996.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 971
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_1997.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1004
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_1998.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1019
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_1999.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1005
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_2000.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 973
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2001.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 973
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2002.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 979
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2003.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 939
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2004.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 973
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2005-.jpg",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2006.jpg",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2007.jpg",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2008.jpg",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2010.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1030
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2011.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 1073
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2012.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 992
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading-and-Leeds-Poster.jpg",
+    "alt": "",
+    "width": 688,
+    "height": 972
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2014.png",
+    "alt": "",
+    "width": 688,
+    "height": 973
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2015.jpg",
+    "alt": "",
+    "width": 1476,
+    "height": 3366
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2016-696x902.png",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2018/11/READING_2019_POSTER.jpg",
+    "alt": "The line-up poster for Reading & Leeds 2019",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2018/11/reading_2020_poster.jpg",
+    "alt": "The line-up poster for Reading & Leeds 2020",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2018/11/reading-_2021_poster.jpg",
+    "alt": "Reading & Leeds 2021 line-up and poster",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2021/08/reading_2022_poster.jpeg",
+    "alt": "Reading 2022",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2022/08/Reading-poster-2023.jpg",
+    "alt": "",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2023/08/reading_poster_2024.jpg",
+    "alt": "The line-up poster for Reading & Leeds 2024. Credit: Press/Festival Republic",
+    "width": 0,
+    "height": 0
+  },
+  {
+    "src": "https://www.nme.com/wp-content/uploads/2024/08/READING_LEEDS_2025_POSTER.jpg",
+    "alt": "The line-up poster for Reading & Leeds 2025. Credit: Press",
+    "width": 0,
+    "height": 0
+  }
+];
+
+        function extractYear(src) {
+            // Extract filename from URL
+            const filename = src.split('/').pop();
+            
+            // Match year after reading_ or Reading_
+            const yearMatch = filename.match(/(?:reading|Reading)_(\d+)/i);
+            if (yearMatch) {
+                const yearStr = yearMatch[1];
+                const year = parseInt(yearStr);
+                if (yearStr.length === 4) {
+                    return year;
+                } else if (yearStr.length === 2) {
+                    return year >= 89 && year <= 99 ? 1900 + year : 2000 + year;
+                }
+            }
+            // Special case for Reading-and-Leeds-Poster.jpg (likely 2013)
+            if (filename.includes('Reading-and-Leeds-Poster.jpg')) {
+                return 2013;
+            }
+            return null;
+        }
+
+        function searchPosters() {
+            const yearInput = document.getElementById('yearInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+
+            if (!yearInput) {
+                resultsDiv.innerHTML = '<p class="no-results">Please enter a year to search.</p>';
+                return;
+            }
+
+            const searchYear = parseInt(yearInput);
+            if (isNaN(searchYear)) {
+                resultsDiv.innerHTML = '<p class="no-results">Please enter a valid year.</p>';
+                return;
+            }
+
+            const matchingPosters = posters.filter(poster => {
+                const year = extractYear(poster.src);
+                return year === searchYear;
+            });
+
+            if (matchingPosters.length === 0) {
+                resultsDiv.innerHTML = `<p class="no-results">No posters found for ${searchYear}.</p>`;
+                return;
+            }
+
+            resultsDiv.innerHTML = matchingPosters.map(poster => {
+                const year = extractYear(poster.src);
+                return `
+                    <div class="poster">
+                        <img src="${poster.src}" alt="${poster.alt || `Reading Festival ${year} Poster`}" width="${poster.width}" height="${poster.height}">
+                        <p><strong>Year:</strong> ${year}</p>
+                        ${poster.alt ? `<p>${poster.alt}</p>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Allow searching by pressing Enter
+        document.getElementById('yearInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPosters();
+            }
+        });
+    </script>
+</body>
+</html>
