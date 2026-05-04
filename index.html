@@ -346,45 +346,87 @@
         let festivalData = [];
 
         // Load JSON data
-        fetch('data2.json')
-            .then(response => response.json())
-            .then(data => {
-                festivalData = [];
-                data.forEach(item => {
-                    if (Array.isArray(item)) {
-                        item.forEach(yearObj => processYearObject(yearObj));
-                    } else if (typeof item === 'object' && item.year) {
-                        processYearObject(item);
-                    }
-                });
+        Promise.all([
+            fetch('data.json').then(r => r.json()),
+            fetch('data2.json').then(r => r.json())
+        ]).then(([data1, data2]) => {
+            festivalData = [];
+            const addedActs = new Set();
 
-                function processYearObject(yearObj) {
-                    if (yearObj.status !== 'active' || !yearObj.lineup) return;
-                    const year = yearObj.year;
-                    for (const [day, stages] of Object.entries(yearObj.lineup)) {
-                        if (typeof stages === 'object') {
-                            for (const [stage, acts] of Object.entries(stages)) {
-                                if (Array.isArray(acts)) {
-                                    acts.forEach((act, index) => {
-                                        festivalData.push({
-                                            year: year,
-                                            day: day,
-                                            stage: stage,
-                                            act: act,
-                                            position: index + 1
-                                        });
+            data2.forEach(item => {
+                if (Array.isArray(item)) {
+                    item.forEach(yearObj => processYearObject(yearObj));
+                } else if (typeof item === 'object' && item.year) {
+                    processYearObject(item);
+                }
+            });
+
+            function processYearObject(yearObj) {
+                if (yearObj.status !== 'active' || !yearObj.lineup) return;
+                const year = yearObj.year;
+                for (const [day, stages] of Object.entries(yearObj.lineup)) {
+                    if (typeof stages === 'object') {
+                        for (const [stage, acts] of Object.entries(stages)) {
+                            if (Array.isArray(acts)) {
+                                acts.forEach((act, index) => {
+                                    festivalData.push({
+                                        year: year,
+                                        day: day,
+                                        stage: stage,
+                                        act: act,
+                                        position: index + 1
                                     });
-                                }
+                                    addedActs.add(`${year}-${act.toLowerCase()}`);
+                                });
                             }
                         }
                     }
                 }
-                document.getElementById('loading').style.display = 'none';
-            })
-            .catch(error => {
-                document.getElementById('loading').innerHTML = 'Error loading data.';
-                console.error('Error fetching data:', error);
+            }
+
+            const stageGroups = {};
+            data1.forEach(item => {
+                const year = item.year;
+                const stage = item.stage;
+                const act = item.act;
+                
+                const actKey = `${year}-${act.toLowerCase()}`;
+                if (!addedActs.has(actKey)) {
+                    const stageKey = `${year}::${stage}`;
+                    if (!stageGroups[stageKey]) stageGroups[stageKey] = [];
+                    stageGroups[stageKey].push(act);
+                    addedActs.add(actKey);
+                }
             });
+
+            for (const [stageKey, acts] of Object.entries(stageGroups)) {
+                const [yearStr, stage] = stageKey.split('::');
+                const year = parseInt(yearStr);
+                
+                const actsPerDay = Math.ceil(acts.length / 3) || 1;
+                const days = ['Friday', 'Saturday', 'Sunday'];
+                
+                acts.forEach((act, index) => {
+                    const dayIndex = Math.floor(index / actsPerDay);
+                    const position = (index % actsPerDay) + 1;
+                    const dayName = days[dayIndex] || 'Sunday';
+                    
+                    festivalData.push({
+                        year: year,
+                        day: dayName + ' (Approx)',
+                        stage: stage,
+                        act: act,
+                        position: position
+                    });
+                });
+            }
+
+            document.getElementById('loading').style.display = 'none';
+        })
+        .catch(error => {
+            document.getElementById('loading').innerHTML = 'Error loading data.';
+            console.error('Error fetching data:', error);
+        });
 
         function toggleMode() {
             const mode = document.querySelector('input[name="searchMode"]:checked').value;
