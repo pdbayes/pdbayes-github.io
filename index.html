@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reading Festival Posters Search</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,224 +59,278 @@
             color: #666;
             margin-top: 50px;
         }
+        .toggle-container {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .toggle-container label {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .data-table-container {
+            flex: 1 1 400px;
+            max-width: 600px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .no-poster {
+            width: 100%;
+            height: 200px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Reading Festival Posters Search</h1>
+    <h1>Reading Festival Data Search</h1>
     <div class="search-container">
-        <input type="text" id="yearInput" placeholder="Enter year (e.g., 1992)">
-        <button onclick="searchPosters()">Search</button>
+        <div class="toggle-container">
+            <label><input type="radio" name="searchMode" value="year" checked onchange="toggleMode()"> Search by Year</label>
+            <label><input type="radio" name="searchMode" value="artist" onchange="toggleMode()"> Search by Artist</label>
+        </div>
+        <input type="text" id="searchInput" placeholder="Enter year (e.g., 1992)">
+        <button onclick="performSearch()">Search</button>
     </div>
-    <div id="results" class="results"></div>
+    <div id="results"></div>
 
     <script>
         let posters = [
   {
-    "src": "https://www.nme.com/wp-content/uploads/2021/08/reading_92_crop_2000-1392x884.jpg",
-    "alt": "The line-up for Reading Festival 1992",
-    "width": 692,
-    "height": 439
+    "src": "images/poster_1988.jpg",
+    "alt": "The line-up for Reading Festival 1988",
+    "width": 688,
+    "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1989.gif",
+    "src": "images/poster_1989.gif",
     "alt": "",
     "width": 367,
     "height": 857
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1990.jpg",
+    "src": "images/poster_1990.jpg",
     "alt": "",
     "width": 688,
     "height": 1019
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1991.jpg",
+    "src": "images/poster_1991.jpg",
     "alt": "",
     "width": 688,
     "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1992.jpg",
+    "src": "images/poster_1992.jpg",
+    "alt": "The line-up for Reading Festival 1992",
+    "width": 692,
+    "height": 439
+  },
+  {
+    "src": "images/poster_1992.jpg",
     "alt": "",
     "width": 688,
     "height": 1063
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1993-.jpg",
+    "src": "images/poster_1993.jpg",
     "alt": "",
     "width": 688,
     "height": 962
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1994.jpg",
+    "src": "images/poster_1994.jpg",
     "alt": "",
     "width": 688,
     "height": 949
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1995-.jpg",
+    "src": "images/poster_1995.jpg",
     "alt": "",
     "width": 688,
     "height": 946
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_1996.jpg",
+    "src": "images/poster_1996.jpg",
     "alt": "",
     "width": 688,
     "height": 971
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_1997.jpg",
+    "src": "images/poster_1997.jpg",
     "alt": "",
     "width": 688,
     "height": 1004
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_1998.jpg",
+    "src": "images/poster_1998.jpg",
     "alt": "",
     "width": 688,
     "height": 1019
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_1999.jpg",
+    "src": "images/poster_1999.jpg",
     "alt": "",
     "width": 688,
     "height": 1005
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading_2000.jpg",
+    "src": "images/poster_2000.jpg",
     "alt": "",
     "width": 688,
     "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2001.jpg",
+    "src": "images/poster_2001.jpg",
     "alt": "",
     "width": 688,
     "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2002.jpg",
+    "src": "images/poster_2002.jpg",
     "alt": "",
     "width": 688,
     "height": 979
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2003.jpg",
+    "src": "images/poster_2003.jpg",
     "alt": "",
     "width": 688,
     "height": 939
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2004.jpg",
+    "src": "images/poster_2004.jpg",
     "alt": "",
     "width": 688,
     "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2005-.jpg",
+    "src": "images/poster_2005.jpg",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2006.jpg",
+    "src": "images/poster_2006.jpg",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2007.jpg",
+    "src": "images/poster_2007.jpg",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2008.jpg",
+    "src": "images/poster_2008.jpg",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2010.jpg",
+    "src": "images/poster_2010.jpg",
     "alt": "",
     "width": 688,
     "height": 1030
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/READING_2011.jpg",
+    "src": "images/poster_2011.jpg",
     "alt": "",
     "width": 688,
     "height": 1073
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2012.jpg",
+    "src": "images/poster_2012.jpg",
     "alt": "",
     "width": 688,
     "height": 992
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/Reading-and-Leeds-Poster.jpg",
+    "src": "images/poster_2013.jpg",
     "alt": "",
     "width": 688,
     "height": 972
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2014.png",
+    "src": "images/poster_2014.png",
     "alt": "",
     "width": 688,
     "height": 973
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2015.jpg",
+    "src": "images/poster_2015.jpg",
     "alt": "",
     "width": 1476,
     "height": 3366
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2017/02/reading_2016-696x902.png",
+    "src": "images/poster_2016.png",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2018/11/READING_2019_POSTER.jpg",
+    "src": "images/poster_2019.jpg",
     "alt": "The line-up poster for Reading & Leeds 2019",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2018/11/reading_2020_poster.jpg",
+    "src": "images/poster_2020.jpg",
     "alt": "The line-up poster for Reading & Leeds 2020",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2018/11/reading-_2021_poster.jpg",
+    "src": "images/poster_2021.jpg",
     "alt": "Reading & Leeds 2021 line-up and poster",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2021/08/reading_2022_poster.jpeg",
+    "src": "images/poster_2022.jpeg",
     "alt": "Reading 2022",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2022/08/Reading-poster-2023.jpg",
+    "src": "images/poster_2023.jpg",
     "alt": "",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2023/08/reading_poster_2024.jpg",
+    "src": "images/poster_2024.jpg",
     "alt": "The line-up poster for Reading & Leeds 2024. Credit: Press/Festival Republic",
     "width": 0,
     "height": 0
   },
   {
-    "src": "https://www.nme.com/wp-content/uploads/2024/08/READING_LEEDS_2025_POSTER.jpg",
+    "src": "images/poster_2025.jpg",
     "alt": "The line-up poster for Reading & Leeds 2025. Credit: Press",
     "width": 0,
     "height": 0
@@ -283,68 +338,233 @@
 ];
 
         function extractYear(src) {
-            // Extract filename from URL
             const filename = src.split('/').pop();
-            
-            // Match year after reading_ or Reading_
-            const yearMatch = filename.match(/(?:reading|Reading)_(\d+)/i);
-            if (yearMatch) {
-                const yearStr = yearMatch[1];
-                const year = parseInt(yearStr);
-                if (yearStr.length === 4) {
-                    return year;
-                } else if (yearStr.length === 2) {
-                    return year >= 89 && year <= 99 ? 1900 + year : 2000 + year;
-                }
-            }
-            // Special case for Reading-and-Leeds-Poster.jpg (likely 2013)
-            if (filename.includes('Reading-and-Leeds-Poster.jpg')) {
-                return 2013;
-            }
-            return null;
+            const yearMatch = filename.match(/poster_(\d{4})/i);
+            return yearMatch ? parseInt(yearMatch[1]) : null;
         }
 
-        function searchPosters() {
-            const yearInput = document.getElementById('yearInput').value.trim();
+        let festivalData = [];
+
+        // Load JSON data
+        fetch('data2.json')
+            .then(response => response.json())
+            .then(data => {
+                festivalData = [];
+                data.forEach(item => {
+                    if (Array.isArray(item)) {
+                        item.forEach(yearObj => processYearObject(yearObj));
+                    } else if (typeof item === 'object' && item.year) {
+                        processYearObject(item);
+                    }
+                });
+
+                function processYearObject(yearObj) {
+                    if (yearObj.status !== 'active' || !yearObj.lineup) return;
+                    const year = yearObj.year;
+                    for (const [day, stages] of Object.entries(yearObj.lineup)) {
+                        if (typeof stages === 'object') {
+                            for (const [stage, acts] of Object.entries(stages)) {
+                                if (Array.isArray(acts)) {
+                                    acts.forEach((act, index) => {
+                                        festivalData.push({
+                                            year: year,
+                                            day: day,
+                                            stage: stage,
+                                            act: act,
+                                            position: index + 1
+                                        });
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+                document.getElementById('loading').style.display = 'none';
+            })
+            .catch(error => {
+                document.getElementById('loading').innerHTML = 'Error loading data.';
+                console.error('Error fetching data:', error);
+            });
+
+        function toggleMode() {
+            const mode = document.querySelector('input[name="searchMode"]:checked').value;
+            const input = document.getElementById('searchInput');
+            if (mode === 'year') {
+                input.placeholder = "Enter year (e.g., 1992)";
+            } else {
+                input.placeholder = "Enter artist (e.g., Nirvana)";
+            }
+            input.value = '';
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function performSearch() {
+            const mode = document.querySelector('input[name="searchMode"]:checked').value;
+            const inputVal = document.getElementById('searchInput').value.trim();
             const resultsDiv = document.getElementById('results');
 
-            if (!yearInput) {
-                resultsDiv.innerHTML = '<p class="no-results">Please enter a year to search.</p>';
+            if (!inputVal) {
+                resultsDiv.innerHTML = '<p class="no-results">Please enter a search term.</p>';
                 return;
             }
 
+            if (mode === 'year') {
+                searchByYear(inputVal, resultsDiv);
+            } else {
+                searchByArtist(inputVal, resultsDiv);
+            }
+        }
+
+        function searchByYear(yearInput, resultsDiv) {
             const searchYear = parseInt(yearInput);
             if (isNaN(searchYear)) {
                 resultsDiv.innerHTML = '<p class="no-results">Please enter a valid year.</p>';
                 return;
             }
 
-            const matchingPosters = posters.filter(poster => {
-                const year = extractYear(poster.src);
-                return year === searchYear;
-            });
+            const matchingPosters = posters.filter(poster => extractYear(poster.src) === searchYear);
+            const actsForYear = festivalData.filter(item => item.year === searchYear);
 
-            if (matchingPosters.length === 0) {
-                resultsDiv.innerHTML = `<p class="no-results">No posters found for ${searchYear}.</p>`;
+            if (matchingPosters.length === 0 && actsForYear.length === 0) {
+                resultsDiv.innerHTML = `<p class="no-results">No data found for ${searchYear}.</p>`;
                 return;
             }
 
-            resultsDiv.innerHTML = matchingPosters.map(poster => {
-                const year = extractYear(poster.src);
-                return `
+            let html = '<div class="results">';
+            if (matchingPosters.length > 0) {
+                const poster = matchingPosters[0];
+                html += `
                     <div class="poster">
-                        <img src="${poster.src}" alt="${poster.alt || `Reading Festival ${year} Poster`}" width="${poster.width}" height="${poster.height}">
-                        <p><strong>Year:</strong> ${year}</p>
+                        <img src="${poster.src}" alt="${poster.alt || `Reading Festival ${searchYear} Poster`}" width="${poster.width}" height="${poster.height}">
+                        <p><strong>Year:</strong> ${searchYear}</p>
                         ${poster.alt ? `<p>${poster.alt}</p>` : ''}
                     </div>
                 `;
+            }
+
+            if (actsForYear.length > 0) {
+                html += `
+                    <div class="data-table-container">
+                        <h3>Acts in ${searchYear}</h3>
+                        <table class="data-table">
+                            <tr><th>Day</th><th>Stage</th><th>Act</th></tr>
+                            ${actsForYear.map(act => `<tr><td>${act.day}</td><td>${act.stage}</td><td>${act.act}</td></tr>`).join('')}
+                        </table>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function searchByArtist(artistInput, resultsDiv) {
+            const lowerInput = artistInput.toLowerCase();
+            const artistPerformances = festivalData.filter(item => item.act.toLowerCase().includes(lowerInput));
+
+            if (artistPerformances.length === 0) {
+                resultsDiv.innerHTML = `<p class="no-results">No performances found for "${artistInput}".</p>`;
+                return;
+            }
+
+            // Group by year to handle multiple performances in same year
+            const grouped = {};
+            artistPerformances.forEach(perf => {
+                if (!grouped[perf.year]) grouped[perf.year] = [];
+                grouped[perf.year].push(perf);
+            });
+
+            const yearsDesc = Object.keys(grouped).sort((a,b) => b - a);
+
+            // Chart data generation
+            const yearsAsc = Object.keys(grouped).sort((a,b) => a - b);
+            const chartData = [];
+            yearsAsc.forEach(year => {
+                const actToFind = grouped[year][0];
+                chartData.push({ year: year, position: actToFind.position });
+            });
+
+            let html = '';
+
+            // Only show chart if there's more than one year
+            if (yearsAsc.length > 1) {
+                html += `<div class="chart-container"><canvas id="artistChart"></canvas></div>`;
+            }
+
+            html += '<div class="results">';
+            html += yearsDesc.map(year => {
+                const yearInt = parseInt(year);
+                const matchingPosters = posters.filter(p => extractYear(p.src) === yearInt);
+                const poster = matchingPosters.length > 0 ? matchingPosters[0] : null;
+
+                const stages = grouped[year].map(p => `${p.stage} (${p.day})`).join('<br>');
+
+                return `
+                    <div class="poster">
+                        ${poster ? `<img src="${poster.src}" alt="Poster ${year}" width="${poster.width}" height="${poster.height}">` : `<div class="no-poster">No Poster Available</div>`}
+                        <p><strong>Year:</strong> ${year}</p>
+                        <p><strong>Act:</strong> ${grouped[year][0].act}</p>
+                        <p><strong>Stage:</strong><br>${stages}</p>
+                    </div>
+                `;
             }).join('');
+            html += '</div>';
+
+            resultsDiv.innerHTML = html;
+
+            if (yearsAsc.length > 1) {
+                const ctx = document.getElementById('artistChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: chartData.map(d => d.year),
+                        datasets: [{
+                            label: 'Bill Position',
+                            data: chartData.map(d => d.position),
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#007bff',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                reverse: true,
+                                title: {
+                                    display: true,
+                                    text: 'Position on Bill (Lower is Better)'
+                                },
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Year'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: `Position on Bill Over Time: ${grouped[yearsAsc[0]][0].act}`
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         // Allow searching by pressing Enter
-        document.getElementById('yearInput').addEventListener('keypress', function(e) {
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                searchPosters();
+                performSearch();
             }
         });
     </script>
