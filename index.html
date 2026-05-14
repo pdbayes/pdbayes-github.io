@@ -107,6 +107,10 @@
 </head>
 <body>
     <h1>Reading Festival Data Search</h1>
+    <div id="loading" style="text-align: center; padding: 20px; font-size: 18px; color: #666;">Loading data...</div>
+    <div id="stats" style="display: none; text-align: center; margin-bottom: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 5px;">
+        <p><strong>Total Years:</strong> <span id="totalYears">0</span> | <strong>Total Acts:</strong> <span id="totalActs">0</span> | <strong>Unique Artists:</strong> <span id="uniqueArtists">0</span></p>
+    </div>
     <div class="search-container">
         <div class="toggle-container">
             <label><input type="radio" name="searchMode" value="year" checked onchange="toggleMode()"> Search by Year</label>
@@ -421,10 +425,18 @@
                 });
             }
 
+            // Calculate and display stats
+            const years = new Set(festivalData.map(item => item.year));
+            const uniqueArtists = new Set(festivalData.map(item => item.act.toLowerCase()));
+            
+            document.getElementById('totalYears').textContent = years.size;
+            document.getElementById('totalActs').textContent = festivalData.length;
+            document.getElementById('uniqueArtists').textContent = uniqueArtists.size;
+            document.getElementById('stats').style.display = 'block';
             document.getElementById('loading').style.display = 'none';
         })
         .catch(error => {
-            document.getElementById('loading').innerHTML = 'Error loading data.';
+            document.getElementById('loading').innerHTML = 'Error loading data. Please check that data.json and data2.json are available.';
             console.error('Error fetching data:', error);
         });
 
@@ -447,6 +459,11 @@
 
             if (!inputVal) {
                 resultsDiv.innerHTML = '<p class="no-results">Please enter a search term.</p>';
+                return;
+            }
+
+            if (festivalData.length === 0) {
+                resultsDiv.innerHTML = '<p class="no-results">Data is still loading. Please wait...</p>';
                 return;
             }
 
@@ -504,8 +521,10 @@
             const lowerInput = artistInput.toLowerCase();
             const artistPerformances = festivalData.filter(item => item.act.toLowerCase().includes(lowerInput));
 
+            console.log(`Searching for "${artistInput}". Found ${artistPerformances.length} performances in ${festivalData.length} total entries.`);
+
             if (artistPerformances.length === 0) {
-                resultsDiv.innerHTML = `<p class="no-results">No performances found for "${artistInput}".</p>`;
+                resultsDiv.innerHTML = `<p class="no-results">No performances found for "${artistInput}". Try searching for all or part of an artist name.</p>`;
                 return;
             }
 
@@ -555,51 +574,56 @@
             resultsDiv.innerHTML = html;
 
             if (yearsAsc.length > 1) {
-                const ctx = document.getElementById('artistChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: chartData.map(d => d.year),
-                        datasets: [{
-                            label: 'Bill Position',
-                            data: chartData.map(d => d.position),
-                            borderColor: '#007bff',
-                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#007bff',
-                            fill: true,
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                reverse: true,
-                                title: {
-                                    display: true,
-                                    text: 'Position on Bill (Lower is Better)'
-                                },
-                                ticks: {
-                                    stepSize: 1
-                                }
+                setTimeout(() => {
+                    const canvasElement = document.getElementById('artistChart');
+                    if (canvasElement) {
+                        const ctx = canvasElement.getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: chartData.map(d => d.year),
+                                datasets: [{
+                                    label: 'Bill Position',
+                                    data: chartData.map(d => d.position),
+                                    borderColor: '#007bff',
+                                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                                    borderWidth: 2,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: '#007bff',
+                                    fill: true,
+                                    tension: 0.1
+                                }]
                             },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Year'
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        reverse: true,
+                                        title: {
+                                            display: true,
+                                            text: 'Position on Bill (Lower is Better)'
+                                        },
+                                        ticks: {
+                                            stepSize: 1
+                                        }
+                                    },
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Year'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: `Position on Bill Over Time: ${grouped[yearsAsc[0]][0].act}`
+                                    }
                                 }
                             }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: `Position on Bill Over Time: ${grouped[yearsAsc[0]][0].act}`
-                            }
-                        }
+                        });
                     }
-                });
+                }, 0);
             }
         }
 
